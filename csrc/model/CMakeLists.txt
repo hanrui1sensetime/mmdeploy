@@ -13,8 +13,7 @@ foreach (MODEL_NAME ${MODEL_NAMES})
     set(TARGET_MODEL_NAME mmdeploy_${MODEL_NAME})
     build_target(${TARGET_MODEL_NAME} ${MODEL_NAME}_impl.cpp)
      target_link_libraries(${TARGET_MODEL_NAME}
-            PRIVATE mmdeploy::core
-            PUBLIC stdc++fs)
+            PRIVATE mmdeploy::core)
     if (${MODEL_NAME} STREQUAL "zip_model")
         find_package(libzip QUIET)
         if (libzip_FOUND)

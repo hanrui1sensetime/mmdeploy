@@ -48,6 +48,10 @@ class ResizeMask : public MMSegmentation {
       return MaskResize(_host_tensor, input_height, input_width);
     } else if (mask.data_type() == DataType::kINT32) {
       return MaskResize(host_tensor, input_height, input_width);
+    } else if (mask.data_type() == DataType::kFLOAT) {
+      // for ncnn. ncnn outputs as float.
+      // TODO: change float to int32, because palette color will use mask as index.
+      return MaskResize(host_tensor, input_height, input_width);
     } else {
       ERROR("unsupported `output` tensor, dtype: {}", (int)mask.data_type());
       return Status(eNotSupported);

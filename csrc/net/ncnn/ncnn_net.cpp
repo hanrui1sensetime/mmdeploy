@@ -2,6 +2,7 @@
 
 #include "ncnn_net.h"
 
+#include "backend_ops/ncnn/ops/ncnn_ops_register.h"
 #include "core/logger.h"
 #include "core/model.h"
 #include "core/utils/formatter.h"
@@ -29,7 +30,7 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
-
+  register_mmdeploy_custom_layers(net_);
   OUTCOME_TRY(params_, model.ReadFile(config.net));
   OUTCOME_TRY(weights_, model.ReadFile(config.weights));
 
@@ -90,7 +91,8 @@ Result<void> NCNNNet::Forward() {
     OUTCOME_TRY(ncnn_status(extractor.extract(output_indices_[i], outputs[i])));
     auto& tensor = output_tensors_[i];
     auto shape = outputs[i].shape();
-    tensor.Reshape({1, shape.w, shape.h, shape.c});
+    // only for seg. cls will failed.
+    tensor.Reshape({1, shape.c, shape.h, shape.w});
     // ncnn Mat may be padded, flatten to avoid that
     auto flattened = outputs[i].reshape(shape.w * shape.h * shape.c);
     OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
