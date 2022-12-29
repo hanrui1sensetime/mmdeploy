@@ -57,7 +57,6 @@ def rtmblock___forward_ncnn(ctx, self, inputs):
     if self.attn_type == 'self-attn':
         uv = self.act_fn(uv)
         u = uv[..., :self.e]
-        # v = uv[..., self.e:(self.e + self.e)]
         v = uv[..., 512:1024]
         base = uv[..., 2 * self.e:2 * self.e + self.s]
 
@@ -91,11 +90,11 @@ def rtmblock___forward_ncnn(ctx, self, inputs):
         qk += bias[:, :q.size(1), :k.size(1)]
 
     kernel = torch.square(F.relu(qk / self.sqrt_s))
-
     if self.dropout_rate > 0.:
         kernel = self.dropout(kernel)
-
-    x = u * torch.bmm(kernel, v)
+    # Rewrite for ncnn to avoid arm fp16 cpu crash. Although
+    # there is no broadcast.
+    x = (u.unsqueeze(1) * torch.bmm(kernel, v).unsqueeze(1)).squeeze(1)
     x = self.o(x)
 
     return x
