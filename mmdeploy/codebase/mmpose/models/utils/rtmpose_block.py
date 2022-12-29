@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from telnetlib import X3PAD
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -41,7 +42,7 @@ def scalenorm__forward__ncnn(ctx, self, x):
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.RTMBlock._forward', backend='ncnn')
 def rtmblock___forward_ncnn(ctx, self, inputs):
-    """Rewrite `_forward` for ncnn backend.
+    """Rewrite `_forward` of RTMBlock for ncnn backend.
 
     ncnn does not support negative dimension for Split op.
     """
@@ -92,9 +93,21 @@ def rtmblock___forward_ncnn(ctx, self, inputs):
     kernel = torch.square(F.relu(qk / self.sqrt_s))
     if self.dropout_rate > 0.:
         kernel = self.dropout(kernel)
-    # Rewrite for ncnn to avoid arm fp16 cpu crash. Although
-    # there is no broadcast.
-    x = (u.unsqueeze(1) * torch.bmm(kernel, v).unsqueeze(1)).squeeze(1)
+
+    x = u * torch.bmm(kernel, v)
     x = self.o(x)
 
     return x
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmpose.models.utils.rtmpose_block.Scale.forward', backend='ncnn')
+def scale__forward_ncnn(ctx, self, x):
+    """Rewrite `forward` of Scale for ncnn backend.
+
+    Adapt the shape to avoid ncnn BinaryOp seg fault.
+    """
+
+    x = x.unsqueeze(1)
+    scale = self.scale[None, None, None, :]
+    return (x * scale).squeeze(1)
