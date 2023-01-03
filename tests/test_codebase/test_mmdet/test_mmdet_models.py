@@ -9,6 +9,12 @@ import mmengine
 import numpy as np
 import pytest
 import torch
+
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
 from mmengine import Config
 from mmengine.config import ConfigDict
 
@@ -23,106 +29,6 @@ try:
     import_codebase(Codebase.MMDET)
 except ImportError:
     pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
-
-
-@backend_checker(Backend.TENSORRT)
-def test_multiclass_nms_static():
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
-    deploy_cfg = Config(
-        dict(
-            onnx_config=dict(output_names=None, input_shape=None),
-            backend_config=dict(
-                type='tensorrt',
-                common_config=dict(
-                    fp16_mode=False, max_workspace_size=1 << 20),
-                model_inputs=[
-                    dict(
-                        input_shapes=dict(
-                            boxes=dict(
-                                min_shape=[1, 5, 4],
-                                opt_shape=[1, 5, 4],
-                                max_shape=[1, 5, 4]),
-                            scores=dict(
-                                min_shape=[1, 5, 8],
-                                opt_shape=[1, 5, 8],
-                                max_shape=[1, 5, 8])))
-                ]),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=20,
-                    pre_top_k=-1,
-                    keep_top_k=10,
-                    background_label_id=-1,
-                ))))
-
-    boxes = torch.rand(1, 5, 4).cuda()
-    scores = torch.rand(1, 5, 8).cuda()
-    max_output_boxes_per_class = 20
-    keep_top_k = 5
-    wrapped_func = WrapFunction(
-        multiclass_nms,
-        max_output_boxes_per_class=max_output_boxes_per_class,
-        keep_top_k=keep_top_k)
-    rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_func,
-        model_inputs={
-            'boxes': boxes,
-            'scores': scores
-        },
-        deploy_cfg=deploy_cfg)
-
-    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
-        'outputs: {}'.format(rewrite_outputs)
-
-
-@backend_checker(Backend.ASCEND)
-def test_multiclass_nms__ascend():
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
-    deploy_cfg = Config(
-        dict(
-            onnx_config=dict(
-                input_names=['boxes', 'scores'],
-                output_names=['dets', 'labels'],
-                input_shape=None),
-            backend_config=dict(
-                type='ascend',
-                model_inputs=[
-                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
-                ]),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=20,
-                    pre_top_k=-1,
-                    keep_top_k=10,
-                    background_label_id=-1,
-                ))))
-
-    boxes = torch.rand(1, 5, 4)
-    scores = torch.rand(1, 5, 8)
-    max_output_boxes_per_class = 20
-    keep_top_k = 10
-    wrapped_func = WrapFunction(
-        multiclass_nms,
-        max_output_boxes_per_class=max_output_boxes_per_class,
-        keep_top_k=keep_top_k)
-    rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_func,
-        model_inputs={
-            'boxes': boxes,
-            'scores': scores
-        },
-        deploy_cfg=deploy_cfg)
-
-    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
-        'outputs: {}'.format(rewrite_outputs)
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
@@ -246,7 +152,7 @@ def test__distancepointbboxcoder__decode(backend_type: Backend):
 def test_multiclass_nms_with_keep_top_k(pre_top_k):
     backend_type = 'onnxruntime'
 
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
+    from mmdeploy.mmcv.ops import multiclass_nms
     max_output_boxes_per_class = 20
     keep_top_k = 15
     deploy_cfg = Config(
@@ -288,6 +194,7 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
 
     wrapped_func = WrapFunction(
         multiclass_nms,
+        nms_type='nms',
         max_output_boxes_per_class=max_output_boxes_per_class,
         keep_top_k=keep_top_k)
 
@@ -336,7 +243,7 @@ def test__anchorgenerator__single_level_grid_priors():
     # test forward
     with RewriterContext({}, backend_type):
         wrap_output = wrapped_func(x)
-        torch.testing.assert_allclose(output, wrap_output)
+        torch_assert_close(output, wrap_output)
 
     onnx_prefix = tempfile.NamedTemporaryFile().name
 
@@ -440,23 +347,6 @@ def get_ssd_head_model():
     return model
 
 
-def get_fcos_head_model():
-    """FCOS Head Config."""
-    test_cfg = Config(
-        dict(
-            deploy_nms_pre=0,
-            min_bbox_size=0,
-            score_thr=0.05,
-            nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100))
-
-    from mmdet.models.dense_heads import FCOSHead
-    model = FCOSHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
-
-    model.requires_grad_(False)
-    return model
-
-
 def get_focus_backbone_model():
     """Backbone Focus Config."""
     from mmdet.models.backbones.csp_darknet import Focus
@@ -511,10 +401,8 @@ def get_reppoints_head_model():
 
 def get_detrhead_model():
     """DETR head Config."""
-    from mmdet.models import build_head
-    from mmdet.utils import register_all_modules
-    register_all_modules()
-    model = build_head(
+    from mmdet.registry import MODELS
+    model = MODELS.build(
         dict(
             type='DETRHead',
             num_classes=4,
@@ -530,8 +418,7 @@ def get_detrhead_model():
                             dict(
                                 type='MultiheadAttention',
                                 embed_dims=4,
-                                num_heads=1,
-                                dropout=0.1)
+                                num_heads=1)
                         ],
                         ffn_cfgs=dict(
                             type='FFN',
@@ -541,8 +428,6 @@ def get_detrhead_model():
                             ffn_drop=0.,
                             act_cfg=dict(type='ReLU', inplace=True),
                         ),
-                        feedforward_channels=32,
-                        ffn_dropout=0.1,
                         operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
                 decoder=dict(
                     type='DetrTransformerDecoder',
@@ -553,8 +438,7 @@ def get_detrhead_model():
                         attn_cfgs=dict(
                             type='MultiheadAttention',
                             embed_dims=4,
-                            num_heads=1,
-                            dropout=0.1),
+                            num_heads=1),
                         ffn_cfgs=dict(
                             type='FFN',
                             embed_dims=4,
@@ -564,7 +448,6 @@ def get_detrhead_model():
                             act_cfg=dict(type='ReLU', inplace=True),
                         ),
                         feedforward_channels=32,
-                        ffn_dropout=0.1,
                         operation_order=('self_attn', 'norm', 'cross_attn',
                                          'norm', 'ffn', 'norm')),
                 )),
@@ -635,7 +518,7 @@ def test_focus_forward(backend_type):
     for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
         model_output = model_output.squeeze()
         rewrite_output = rewrite_output.squeeze()
-        torch.testing.assert_allclose(
+        torch_assert_close(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
@@ -675,77 +558,6 @@ def test_l2norm_forward(backend_type):
             rewrite_output = rewrite_output.squeeze()
             assert np.allclose(
                 model_output[0], rewrite_output, rtol=1e-03, atol=1e-05)
-
-
-def test_predict_by_feat_of_fcos_head_ncnn():
-    backend_type = Backend.NCNN
-    check_backend(backend_type)
-    fcos_head = get_fcos_head_model()
-    fcos_head.cpu().eval()
-    s = 128
-    batch_img_metas = [{
-        'scale_factor': np.ones(4),
-        'pad_shape': (s, s, 3),
-        'img_shape': (s, s, 3)
-    }]
-
-    output_names = ['detection_output']
-    deploy_cfg = Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(output_names=output_names, input_shape=None),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                model_type='ncnn_end2end',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=200,
-                    pre_top_k=5000,
-                    keep_top_k=100,
-                    background_label_id=-1,
-                ))))
-
-    # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
-    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
-    # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
-    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, fcos_head.num_classes, pow(2, i), pow(2, i))
-        for i in range(5, 0, -1)
-    ]
-    seed_everything(5678)
-    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
-
-    seed_everything(9101)
-    centernesses = [
-        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-
-    # to get outputs of onnx model after rewrite
-    batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
-    wrapped_model = WrapModel(
-        fcos_head,
-        'predict_by_feat',
-        batch_img_metas=batch_img_metas,
-        with_nms=True)
-    rewrite_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-        'centernesses': centernesses
-    }
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-
-    # output should be of shape [1, N, 6]
-    if is_backend_output:
-        assert rewrite_outputs[0].shape[-1] == 6
-    else:
-        assert rewrite_outputs.shape[-1] == 6
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
@@ -898,6 +710,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1,
+                    export_postprocess_mask=False,
                 ))))
     model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
@@ -906,13 +719,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
-    from mmengine.structures import InstanceData
-    data_sample = DetDataSample()
-    img_meta = dict(img_shape=(800, 1216, 3))
-    gt_instances = InstanceData(metainfo=img_meta)
-    gt_instances.bboxes = torch.rand((5, 4))
-    gt_instances.labels = torch.rand((5, ))
-    data_sample.gt_instances = gt_instances
+    data_sample = DetDataSample(metainfo=dict(img_shape=(800, 1216, 3)))
     rewrite_inputs = {'batch_inputs': img}
     wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
@@ -2260,3 +2067,96 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
         run_with_backend=False)
 
     assert rewrite_outputs is not None
+
+
+def get_solo_head_model():
+    test_cfg = Config(
+        dict(
+            nms_pre=500,
+            score_thr=0.1,
+            mask_thr=0.5,
+            filter_thr=0.05,
+            kernel='gaussian',  # gaussian/linear
+            sigma=2.0,
+            max_per_img=100))
+    from mmdet.models.dense_heads import SOLOHead
+    model = SOLOHead(4, 32, feat_channels=32, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.OPENVINO])
+def test_solo_head_predict_by_feat(backend_type: Backend):
+    """Test predict_by_feat rewrite of solo head."""
+    check_backend(backend_type)
+    solo_head = get_solo_head_model()
+    s = 128
+    solo_head.cpu().eval()
+    batch_img_metas = [{'img_shape': (s, s, 3), 'ori_shape': (s, s, 3)}]
+
+    output_names = ['dets', 'labels', 'masks']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                    export_postprocess_mask=True))))
+    seed_everything(1234)
+    num_grids = [24, 20, 16, 12, 8]
+    mask_preds = [
+        torch.rand(1, num_grid**2, s // 4, s // 4) for num_grid in num_grids
+    ]
+    seed_everything(5678)
+    cls_scores = [
+        torch.rand(1, solo_head.num_classes, num_grid, num_grid)
+        for num_grid in num_grids
+    ]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'mlvl_mask_preds': mask_preds,
+        'mlvl_cls_scores': cls_scores,
+        'batch_img_metas': batch_img_metas,
+    }
+    model_outputs = get_model_outputs(solo_head, 'predict_by_feat',
+                                      model_inputs)
+
+    wrapped_model = WrapModel(
+        solo_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
+    rewrite_inputs = {
+        'mlvl_mask_preds': mask_preds,
+        'mlvl_cls_scores': cls_scores,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None

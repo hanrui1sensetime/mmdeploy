@@ -22,6 +22,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)                       | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
 | [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                       | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
+| [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)                                 | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)                        | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
@@ -61,8 +62,8 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [Segmenter](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segmenter) [\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
 | [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)                                 | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)                               | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)                        | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                          | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                       | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan)                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)                                   | MMEditing        |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
 | [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |

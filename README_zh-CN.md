@@ -19,10 +19,10 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/latest/)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/1.x/)
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
-[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
+[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/tree/1.x/LICENSE)
 [![issue resolution](https://img.shields.io/github/issues-closed-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 [![open issues](https://img.shields.io/github/issues-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 
@@ -56,18 +56,18 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 支持的设备平台和推理引擎如下表所示。benchmark请参考[这里](docs/zh_cn/03-benchmark/benchmark.md)
 
-| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
-| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
-| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
-| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
-| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
-| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
-| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
-| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
-| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
-| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
-| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
-| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
+| Device / Platform | Linux                                                                    | Windows                                 | macOS    | Android          |
+| ----------------- | ------------------------------------------------------------------------ | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch<br>✔️TVM | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn                                                                   | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn                                                                   | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch<br>✔️TVM           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                               | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                                   | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                                   | -                                       | -        | -                |
+| Apple M1          | -                                                                        | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                                        | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                                        | -                                       | -        | ✔️SNPE           |
 
 ### SDK 可高度定制化
 
@@ -75,7 +75,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/latest/)
+## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/1.x/)
 
 - [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
@@ -119,7 +119,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 基准与模型库
 
-基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/latest/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)中获得。
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/1.x/03-benchmark/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/1.x/03-benchmark/supported_models.html)中获得。
 
 ## 贡献指南
 
