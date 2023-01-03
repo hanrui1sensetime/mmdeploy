@@ -83,7 +83,7 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             f'render and display result skipped for headless device, exception {e}'  # noqa: E501
         )
         visualize = False
-
+    visualize = True
     if visualize is True:
         task_processor.visualize(
             image=img,
