@@ -110,7 +110,6 @@ def rtmdet_head__predict_by_feat(self,
     'RTMDetHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def rtmdet_head__predict_by_feat__ncnn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -130,7 +129,6 @@ def rtmdet_head__predict_by_feat__ncnn(
     correct `BinaryOps` calculation by ncnn.
 
     Args:
-        ctx: Context that contains original meta information.
         cls_scores (list[Tensor]): Classification scores for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * num_classes, H, W).
@@ -153,6 +151,7 @@ def rtmdet_head__predict_by_feat__ncnn(
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
     from mmdeploy.utils import get_root_logger
     from mmdeploy.utils.config_utils import is_dynamic_shape

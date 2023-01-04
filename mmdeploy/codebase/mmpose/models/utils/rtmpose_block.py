@@ -11,7 +11,7 @@ from mmpose.models.utils import rope
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.RTMBlock.shift_mixing', backend='ncnn')
-def rtmblock__shift_mixing__ncnn(ctx, self, x):
+def rtmblock__shift_mixing__ncnn(self, x):
     """Rewrite `shift_mixing` for ncnn backend.
 
     ncnn does not support negative dimension for torch.chunk and torch.cat
@@ -26,7 +26,7 @@ def rtmblock__shift_mixing__ncnn(ctx, self, x):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.ScaleNorm.forward', backend='ncnn')
-def scalenorm__forward__ncnn(ctx, self, x):
+def scalenorm__forward__ncnn(self, x):
     """Rewrite `shift_mixing` for ncnn backend.
 
     ncnn does not support negative dimension for torch.chunk and torch.cat
@@ -41,7 +41,7 @@ def scalenorm__forward__ncnn(ctx, self, x):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.RTMBlock._forward', backend='ncnn')
-def rtmblock___forward_ncnn(ctx, self, inputs):
+def rtmblock___forward_ncnn(self, inputs):
     """Rewrite `_forward` of RTMBlock for ncnn backend.
 
     ncnn does not support negative dimension for Split op.
@@ -102,7 +102,7 @@ def rtmblock___forward_ncnn(ctx, self, inputs):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.Scale.forward', backend='ncnn')
-def scale__forward_ncnn(ctx, self, x):
+def scale__forward_ncnn(self, x):
     """Rewrite `forward` of Scale for ncnn backend.
 
     Adapt the shape to avoid ncnn BinaryOp seg fault.
