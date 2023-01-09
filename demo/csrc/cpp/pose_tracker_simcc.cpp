@@ -52,7 +52,7 @@ const auto config_json = R"(
   ]
 }
 )"_json;
-
+static int total_bboxes = 0;
 namespace mmdeploy {
 
 #define REGISTER_SIMPLE_MODULE(name, fn) \
@@ -130,6 +130,8 @@ Value ProcessBboxes(const Value& detections, const Value& data, Value state) {
         bboxes.push_back(det);
       }
     }
+    fprintf(stderr, "debugging bboxes by detection: %d\n", bboxes.size());
+    total_bboxes += bboxes.size();
     MMDEPLOY_INFO("bboxes by detection: {}", bboxes.size());
     state["bboxes"] = bboxes;
   } else {  // no detections, use tracked results
@@ -340,12 +342,15 @@ class PoseTracker {
                        static_cast<DataType>(img.desc().type), {img.desc().data, [](void*) {}});
     // TODO: get_ref<int&> is not working
     auto frame_id = state["frame_id"].get<int>();
+    use_detector = true;
+    /*
     if (use_detector < 0) {
       use_detector = frame_id % 10 == 0;
       if (use_detector) {
         MMDEPLOY_WARN("use detector");
       }
     }
+    */
     state["frame_id"] = frame_id + 1;
     state["img_shape"] = {mat.height(), mat.width()};
     Value::Object data{{"ori_img", mat}};
@@ -444,18 +449,18 @@ int main(int argc, char* argv[]) {
             return -1;
           }
       }
-      fprintf(stderr, "debugging before track!\n");
       auto t0 = std::chrono::high_resolution_clock::now();
       auto result = tracker.Track(frame, state);
+      auto result_size = result.array().size();
       auto t1 = std::chrono::high_resolution_clock::now();
-      fprintf(stderr, "debugging after track!\n");
-      if (frame_id >= 30) {
+      if (frame_id >= 0) {
         dt += t1 - t0;
+        fprintf(stderr, "debugging t1 - t0: %lf, result_size: %d\n", t1 - t0, result_size);
       }
       ++frame_id;
     }
     closedir(d);
   // Visualize(frame, result);
-  if (frame_id >= 30)
-    MMDEPLOY_INFO("frames: {}, average time {} ms", frame_id - 30, dt.count() / (frame_id - 30));
+  if (frame_id >= 0)
+    fprintf(stderr, "frames: %d, total_bboxes: %d, total time %lf ms, average time %lf ms", frame_id - 0, total_bboxes, dt.count(), dt.count() / total_bboxes);
 }
