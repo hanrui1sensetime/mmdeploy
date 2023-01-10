@@ -601,8 +601,6 @@ models:
     sdk_config: *sdk_dynamic
 - metafile: configs/solo/metafile.yml
   model_configs:
-  - configs/solo/decoupled-solo_r50_fpn_3x_coco.py
-  - configs/solo/decoupled-solo-light_r50_fpn_3x_coco.py
   - configs/solo/solo_r50_fpn_3x_coco.py
   name: SOLO(SEG)
   pipelines:
