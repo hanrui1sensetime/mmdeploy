@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from telnetlib import X3PAD
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -10,24 +9,9 @@ from mmpose.models.utils import rope
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmpose.models.utils.rtmpose_block.RTMBlock.shift_mixing', backend='ncnn')
-def rtmblock__shift_mixing__ncnn(self, x):
-    """Rewrite `shift_mixing` for ncnn backend.
-
-    ncnn does not support negative dimension for torch.chunk and torch.cat
-    ncnn pad shape does not support float input
-    """
-    x_shift, x_pass = x.chunk(2, dim=x.dim() - 1)
-    x_shift = torch.cat(
-        [torch.zeros_like(x_shift[:, 0:1, :]), x_shift[:, :-1, :]], dim=1)
-    x = torch.cat((x_shift, x_pass), dim=x.dim() - 1)
-    return x
-
-
-@FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.ScaleNorm.forward', backend='ncnn')
 def scalenorm__forward__ncnn(self, x):
-    """Rewrite `shift_mixing` for ncnn backend.
+    """Rewrite `scalenorm` for ncnn backend.
 
     ncnn does not support negative dimension for torch.chunk and torch.cat
     ncnn pad shape does not support float input
@@ -52,8 +36,6 @@ def rtmblock___forward_ncnn(self, inputs):
         x, k, v = inputs
 
     x = self.ln(x)
-    if self.shift is not None:
-        x = self.shift_mixing(x)
     uv = self.uv(x)
     if self.attn_type == 'self-attn':
         uv = self.act_fn(uv)
@@ -71,10 +53,6 @@ def rtmblock___forward_ncnn(self, inputs):
             k = rope(k, dim=1)
     else:
         u, q = torch.split(self.act_fn(uv), [self.e, self.s], dim=uv.dim() - 1)
-
-        if self.shift:
-            k = self.shift_mixing(k)
-            v = self.shift_mixing(v)
 
         k = self.k_fc(k)
         v = self.v_fc(v)
