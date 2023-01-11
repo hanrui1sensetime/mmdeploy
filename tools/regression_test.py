@@ -739,9 +739,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             f'--device {device_type} ', '--log-level INFO'
         ]
 
-    # if sdk_config is not None:
-    #     cmd_lines += ['--dump-info']
-    cmd_lines += ['--dump-info']
+    if sdk_config is not None:
+        cmd_lines += ['--dump-info']
 
     if test_img_path is not None:
         cmd_lines += [f'--test-img {test_img_path}']
@@ -1015,6 +1014,9 @@ def deploee_runtime(backend: str):
     elif backend == 'ncnn':
         import ncnn
         runtime = 'ncnn' + ncnn.__version__.split('.')[-1]
+    elif backend == 'openvino':
+        from mmdeploy.backend.openvino import OpenVINOManager
+        runtime = 'openvino' + OpenVINOManager.get_version()
 
     return runtime
 
