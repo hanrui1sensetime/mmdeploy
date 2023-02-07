@@ -185,8 +185,11 @@ class End2EndModel(BaseBackendModel):
         Returns:
             Any: Model output.
         """
-        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
         inputs = inputs.contiguous()
+        inputs = inputs.contiguous()
+        if mode == 'tensor':
+            outputs = self.predict(inputs)
+            return outputs
         outputs = self.predict(inputs)
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]

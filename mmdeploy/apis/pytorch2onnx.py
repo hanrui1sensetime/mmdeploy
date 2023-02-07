@@ -46,8 +46,9 @@ def torch2onnx(img: Any,
     """
 
     from mmdeploy.apis.core.pipeline_manager import no_mp
-    from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
-                                get_input_shape, get_onnx_config, load_config)
+    from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                                get_dynamic_axes, get_input_shape,
+                                get_onnx_config, load_config)
     from .onnx import export
 
     # load deploy_cfg if necessary
@@ -69,7 +70,8 @@ def torch2onnx(img: Any,
     if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
-    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
+    mode = get_codebase_config(deploy_cfg).get('mode', 'predict')
+    input_metas = {'data_samples': data_samples, 'mode': mode}
 
     # export to onnx
     context_info = dict()

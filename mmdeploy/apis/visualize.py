@@ -5,7 +5,8 @@ import mmengine
 import numpy as np
 import torch
 
-from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            get_input_shape, load_config)
 
 
 def visualize_model(model_cfg: Union[str, mmengine.Config],
@@ -68,8 +69,26 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
                 update_data_preprocessor)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
+    mode = get_codebase_config(deploy_cfg).get('mode', 'predict')
+
     with torch.no_grad():
-        result = model.test_step(model_inputs)[0]
+        if mode == 'tensor':
+            data = model.data_preprocessor(model_inputs, False)
+            result = model._run_forward(data, mode='tensor')
+            img = []
+            from mmdeploy.utils import get_root_logger
+            logger = get_root_logger()
+            logger.warning(
+                f'Visualize for tensor mode is a TODO item, stay tuned!'
+            )  # noqa: E501
+        elif mode == 'predict':
+            result = model.test_step(model_inputs)[0]
+        else:
+            from mmdeploy.utils import get_root_logger
+            logger = get_root_logger()
+            logger.warning(
+                f'unknown mode for deploy: expected tensor mode or predict mode, got {mode} mode'
+            )  # noqa: E501
 
     if show_result:
         try:
