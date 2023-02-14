@@ -6,6 +6,9 @@ import mmdeploy.Model;
 import mmdeploy.Device;
 import mmdeploy.Context;
 
+import org.opencv.videoio;
+import org.opencv.core;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -35,29 +38,47 @@ public class PoseTrack {
         context.add(0, device.device_);
         try {
             poseTracker = new PoseTracker(detModel.model_, poseModel.model_, context.context_);
-            poseTracker.setDefaultParams();
+            float[] smoothParam = new float[] {0.007, 1, 1};
+            float[] keypointSigmas = new float[] {0.026, 0.025, 0.025, 0.035, 0.035, 0.079, 0.079, 0.072, 0.072,
+                              0.062, 0.062, 0.107, 0.107, 0.087, 0.087, 0.089, 0.089};
+            PoseTracker.Params params = new PoseTracker.Params(1, 0, 0.5, -1, 0.7, -1, 0.5, -1, 1.25, -1, 0.5, keypointSigmas, 17, 0.4, 10, 1, 0.05, 0.00625, smoothParam, 0);
+            params.DetMinBboxSize = 100;
+            params.DetInterval = 1;
+            params.PoseMaxNumBboxes = 6;
+            params = poseTracker.setParamValue(params);
+            // setParamValue must return handle.
+            long paramsHandle = params.handle;
+            long stateHandle = poseTracker.CreateState(paramsHandle);
+            VideoCapture cap = new VideoCapture(video);
+            if (!cap.isOpened()) {
+                System.out.printf("failed to open video: %s", video);
+            }
+            org.opencv.core.Mat frame = new org.opencv.core.Mat();
 
+            while (true)
+            {
+                cap.Read(frame);
+                if (frame.Empty())
+                {
+                    break;
+                }
+                mat = CvMatToMat(frame);
+                // process
+                Result[] result = poseTracker.Apply(stateHandle, mat, -1);
 
-
-
-            // load image
-            Mat img = Utils.loadImage(imagePath);
-
-            // apply pose estimator
-            PoseDetector.Result[] result = pose_estimator.apply(img);
-
-            // print results
-            for (PoseDetector.Result value : result) {
-                for (int i = 0; i < value.point.length; i++) {
-                    System.out.printf("point %d, x: %d, y: %d\n", i, (int)value.point[i].x, (int)value.point[i].y);
+                // visualize
+                if (!Visualize(frame, result, 1280, frame_id++, true))
+                {
+                    break;
                 }
             }
+
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
         } finally {
-            // release pose estimator
-            if (pose_estimator != null) {
-                pose_estimator.release();
+            // release pose tracker
+            if (poseTracker != null) {
+                poseTracker.release();
             }
         }
     }

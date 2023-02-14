@@ -1,13 +1,16 @@
 package mmdeploy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PoseTracker {
     static {
         System.loadLibrary("mmdeploy_java");
     }
 
     private final long handle;
-    private long state_handle;
-    private long params_handle;
+    private long stateHandle;
+    private long paramsHandle;
 
     public static class Result {
         public PointF[] keypoints;
@@ -23,48 +26,50 @@ public class PoseTracker {
     }
 
     public static class Param {
-        public int det_interval;
-        public int det_label;
-        public float det_thr;
-        public float det_min_bbox_size;
-        public float det_nms_thr;
-        public int pose_max_num_bboxes;
-        public float pose_kpt_thr;
-        public int pose_min_keypoints;
-        public float pose_bbox_scale;
-        public float pose_min_bbox_size;
-        public float pose_nms_thr;
-        public float[] keypoint_sigmas;
-        public int keypoint_sigmas_size;
-        public float track_iou_thr;
-        public int track_max_missing;
-        public int track_history_size;
-        public float std_weight_position;
-        public float std_weight_velocity;
-        public float[] smooth_params;
-        public Param(int det_interval, int det_label, float det_thr, float det_min_bbox_size, float det_nms_thr, int pose_max_num_bboxes,
-                    float pose_kpt_thr, int pose_min_keypoints, float pose_bbox_scale, float pose_min_bbox_size, float pose_nms_thr, float[] keypoint_sigmas,
-                    int keypoint_sigmas_size, float track_iou_thr, int track_max_missing, int track_history_size, float std_weight_position, float std_weight_velocity,
-                    float[] smooth_params) {
-                        this.det_interval = det_interval;
-                        this.det_label = det_label;
-                        this.det_thr = det_thr;
-                        this.det_min_bbox_size = det_min_bbox_size;
-                        this.det_nms_thr = det_nms_thr;
-                        this.pose_max_num_bboxes = pose_max_num_bboxes;
-                        this.pose_kpt_thr = pose_kpt_thr;
-                        this.pose_min_keypoints = pose_min_keypoints;
-                        this.pose_bbox_scale = pose_bbox_scale;
-                        this.pose_min_bbox_size = pose_min_bbox_size;
-                        this.pose_nms_thr = pose_nms_thr;
-                        this.keypoint_sigmas = keypoint_sigmas;
-                        this.keypoint_sigmas_size = keypoint_sigmas_size;
-                        this.track_iou_thr = track_iou_thr;
-                        this.track_max_missing = track_max_missing;
-                        this.track_history_size = track_history_size;
-                        this.std_weight_position = std_weight_position;
-                        this.std_weight_velocity = std_weight_velocity;
-                        this.smooth_params = smooth_params;
+        public int detInterval;
+        public int detLabel;
+        public float detThr;
+        public float detMinBboxSize;
+        public float detNmsThr;
+        public int poseMaxNumBboxes;
+        public float poseKptThr;
+        public int poseMinKeypoints;
+        public float poseBboxScale;
+        public float poseMinBboxSize;
+        public float poseNmsThr;
+        public float[] keypointSigmas;
+        public int keypointSigmasSize;
+        public float trackIouThr;
+        public int trackMaxMissing;
+        public int trackHistorySize;
+        public float stdWeightPosition;
+        public float stdWeightVelocity;
+        public float[] smoothParams;
+        public long handle;
+        public Param(int detInterval, int detLabel, float detThr, float detMinBboxSize, float detNmsThr, int poseMaxNumBboxes,
+                    float poseKptThr, int poseMinKeypoints, float poseBboxScale, float poseMinBboxSize, float poseNmsThr, float[] keypointSigmas,
+                    int keypointSigmasSize, float trackIouThr, int trackMaxMissing, int trackHistorySize, float stdWeightPosition, float stdWeightVelocity,
+                    float[] smoothParams, long handle) {
+                        this.detInterval = detInterval;
+                        this.detLabel = detLabel;
+                        this.detThr = detThr;
+                        this.detMinBboxSize = detMinBboxSize;
+                        this.detNmsThr = detNmsThr;
+                        this.poseMaxNumBboxes = poseMaxNumBboxes;
+                        this.poseKptThr = poseKptThr;
+                        this.poseMinKeypoints = poseMinKeypoints;
+                        this.poseBboxScale = poseBboxScale;
+                        this.poseMinBboxSize = poseMinBboxSize;
+                        this.poseNmsThr = poseNmsThr;
+                        this.keypointSigmas = keypointSigmas;
+                        this.keypointSigmasSize = keypointSigmasSize;
+                        this.trackIouThr = trackIouThr;
+                        this.trackMaxMissing = trackMaxMissing;
+                        this.trackHistorySize = trackHistorySize;
+                        this.stdWeightPosition = stdWeightPosition;
+                        this.stdWeightVelocity = stdWeightVelocity;
+                        this.smoothParams = smoothParams;
+                        this.handle = handle;
                     }
     }
 
@@ -72,18 +77,21 @@ public class PoseTracker {
         handle = create(detect, pose, context);
     }
 
-    public long setParams(Param param) {
-        params_handle = setParamValue(param);
-        return params_handle;
+    public Params setParams(Params customParam) {
+        params = setParamValue(customParam);
+        paramsHandle = params.handle;
+        return params;
     }
 
     public long setParams() {
-        params_handle = setParamValue();
-        return params_handle;
+        params = setParamValue();
+        paramsHandle = params.handle;
+        return params;
     }
 
     public long createState(long params) {
-        return createState(handle, params);
+        stateHandle = createState(handle, params);
+        return stateHandle;
     }
 
     public Result[][] apply(long[] states, Mat[] frames, int[] detects) {
@@ -124,7 +132,7 @@ public class PoseTracker {
 
     private native long setParamValue();
 
-    private native long setParamValue(Param param);
+    private native long setParamValue(Params customParam);
 
     private native Result[] apply(long[] states, Mat[] frames, int[] detects);
 }
