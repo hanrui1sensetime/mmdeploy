@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
-import java.lang.math;
+import java.lang.*;
 
 public class Utils {
     public static Mat loadImage(String path) throws IOException {
@@ -33,14 +33,14 @@ public class Utils {
     {
         int skeleton[][] = {{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
                 {5, 6}, {5, 7}, {6, 8}, {7, 9}, {8, 10}, {1, 2}, {0, 1},
-                {0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}}
+                {0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}};
         Scalar palette[] = {new Scalar(255, 128, 0), new Scalar(255, 153, 51), new Scalar(255, 178, 102),
                             new Scalar(230, 230, 0), new Scalar(255, 153, 255), new Scalar(153, 204, 255),
                             new Scalar(255, 102, 255), new Scalar(255, 51, 255), new Scalar(102, 178, 255),
                             new Scalar(51, 153, 255), new Scalar(255, 153, 153), new Scalar(255, 102, 102),
                             new Scalar(255, 51, 51), new Scalar(153, 255, 153), new Scalar(102, 255, 102),
                             new Scalar(51, 255, 51), new Scalar(0, 255, 0), new Scalar(0, 0, 255),
-                            new Scalar(255, 0, 0), new Scalar(255, 255, 255)}
+                            new Scalar(255, 0, 0), new Scalar(255, 255, 255)};
         int linkColor[] = {
                 0, 0, 0, 0, 7, 7, 7, 9, 9, 9, 9, 9, 16, 16, 16, 16, 16, 16, 16
             };
@@ -54,16 +54,6 @@ public class Utils {
         {
             frame = frame.clone();
         }
-
-            Action<List<float>, Scalar> drawBbox = (bbox, color) =>
-            {
-                for (int i = 0; i < bbox.Count; i++)
-                {
-                    bbox[i] *= scale;
-                }
-                Cv2.Rectangle(frame, new OpenCvSharp.Point(bbox[0], bbox[1]),
-                    new OpenCvSharp.Point(bbox[2], bbox[3]), color);
-            };
 
         for (int i = 0; i < results.length; i++)
         {
@@ -99,7 +89,6 @@ public class Utils {
             }
             if (with_bbox)
             {
-                var bbox = new List<float> { pt.Bbox.Left, pt.Bbox.Top, pt.Bbox.Right, pt.Bbox.Bottom };
                 float bbox[] = {pt.bbox.left, pt.bbox.top, pt.bbox.right, pt.bbox.bottom};
                 for (int i = 0; i < 4; i++)
                 {
