@@ -25,7 +25,7 @@ public class PoseTracker {
         }
     }
 
-    public static class Param {
+    public static class Params {
         public int detInterval;
         public int detLabel;
         public float detThr;
@@ -46,7 +46,7 @@ public class PoseTracker {
         public float stdWeightVelocity;
         public float[] smoothParams;
         public long handle;
-        public Param(int detInterval, int detLabel, float detThr, float detMinBboxSize, float detNmsThr, int poseMaxNumBboxes,
+        public Params(int detInterval, int detLabel, float detThr, float detMinBboxSize, float detNmsThr, int poseMaxNumBboxes,
                     float poseKptThr, int poseMinKeypoints, float poseBboxScale, float poseMinBboxSize, float poseNmsThr, float[] keypointSigmas,
                     int keypointSigmasSize, float trackIouThr, int trackMaxMissing, int trackHistorySize, float stdWeightPosition, float stdWeightVelocity,
                     float[] smoothParams, long handle) {
@@ -78,13 +78,13 @@ public class PoseTracker {
     }
 
     public Params setParams(Params customParam) {
-        params = setParamValue(customParam);
+        Params params = setParamValue(customParam);
         paramsHandle = params.handle;
         return params;
     }
 
-    public long setParams() {
-        params = setParamValue();
+    public Params setParams() {
+        Params params = setParamValue();
         paramsHandle = params.handle;
         return params;
     }
@@ -95,7 +95,7 @@ public class PoseTracker {
     }
 
     public Result[][] apply(long[] states, Mat[] frames, int[] detects) {
-        Result[] results = apply(states, frames, detects);
+        Result[] results = apply(handle, states, frames, detects);
         Result[][] rets = new Result[detects.length][];
         int offset = 0;
         for (int i = 0; i < detects.length; ++i) {
@@ -111,7 +111,7 @@ public class PoseTracker {
         long[] states = new long[]{state};
         Mat[] frames = new Mat[]{frame};
         int[] detects = new int[]{detect};
-        return apply(states, frames, detects);
+        return apply(handle, states, frames, detects);
     }
 
     public void release() {
@@ -130,9 +130,9 @@ public class PoseTracker {
 
     private native void destroyState(long state);
 
-    private native long setParamValue();
+    private native Params setParamValue();
 
-    private native long setParamValue(Params customParam);
+    private native Params setParamValue(Params customParam);
 
-    private native Result[] apply(long[] states, Mat[] frames, int[] detects);
+    private native Result[] apply(long handle, long[] states, Mat[] frames, int[] detects);
 }

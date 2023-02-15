@@ -3,6 +3,7 @@
 #include <numeric>
 
 #include "mmdeploy/apis/c/mmdeploy/common.h"
+#include "mmdeploy/apis/c/mmdeploy/executor.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 

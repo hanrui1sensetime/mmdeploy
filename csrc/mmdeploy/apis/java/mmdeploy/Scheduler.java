@@ -5,7 +5,7 @@ public class Scheduler {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private final long scheduler_;
+    private static long scheduler_;
 
     public Scheduler(long scheduler) {
         scheduler_ = scheduler;
@@ -13,19 +13,21 @@ public class Scheduler {
 
     public static long threadPool(int numThreads) {
         scheduler_ = createThreadPool(numThreads);
+        return scheduler_;
     }
 
     public static long thread() {
         scheduler_ = createThread();
+        return scheduler_;
     }
 
     public void release() {
         destroy(scheduler_);
     }
 
-    private native long createThreadPool(int numThreads);
+    private static native long createThreadPool(int numThreads);
 
-    private native long createThread();
+    private static native long createThread();
 
     private native void destroy(long scheduler_);
 }
