@@ -5,7 +5,7 @@ public class Model {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private final long model_;
+    public final long model_;
 
     public Model(String path) {
         model_ = create(path);

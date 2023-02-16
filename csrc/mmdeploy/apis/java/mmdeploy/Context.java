@@ -5,7 +5,7 @@ public class Context {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private final long context_;
+    public final long context_;
 
     public Context() {
         context_ = create();

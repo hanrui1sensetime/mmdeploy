@@ -5,7 +5,7 @@ public class Device {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private final long device_;
+    public final long device_;
     private String name_;
     private int index_;
 

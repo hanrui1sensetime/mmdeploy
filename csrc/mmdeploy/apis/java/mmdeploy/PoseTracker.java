@@ -1,8 +1,5 @@
 package mmdeploy;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class PoseTracker {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -130,9 +127,9 @@ public class PoseTracker {
 
     private native void destroyState(long state);
 
-    private native Params setParamValue();
+    public native Params setParamValue();
 
-    private native Params setParamValue(Params customParam);
+    public native Params setParamValue(Params customParam);
 
     private native Result[] apply(long handle, long[] states, Mat[] frames, int[] detects);
 }
