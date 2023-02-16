@@ -11,6 +11,7 @@ import org.opencv.videoio.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 import org.opencv.imgcodecs.*;
+import org.opencv.highgui.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -90,10 +91,8 @@ public class PoseTrack {
                 }
             }
 
-            //Imgcodecs.imshow("Linear Blend", frame);
-            //return HighGui.waitKey(1) != 'q';
-            // OpenCV Java does not have imshow, so the visualize must needs android api.
-            return true;
+            HighGui.imshow("Linear Blend", frame);
+            return HighGui.waitKey(1) != 'q';
     }
     public static void main(String[] args) {
         // Parse arguments
@@ -105,7 +104,9 @@ public class PoseTrack {
         String detModelPath = args[1];
         String poseModelPath = args[2];
         String videoPath = args[3];
-        String outputDir = args[4];
+        if (args.length == 5) {
+            String outputDir = args[4];
+        }
 
         // create pose tracker
         PoseTracker poseTracker = null;
