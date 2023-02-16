@@ -16,7 +16,7 @@ public class Context {
     }
 
     public void add(int contextType, long handle) {
-        add(context_, contextType, handle);
+        add(context_, contextType, "", handle);
     }
 
     public void release() {
@@ -25,9 +25,7 @@ public class Context {
 
     private native long create();
 
-    private native void add(long context, int contextType, String name, long handle);
-
-    private native void add(long context, int contextType, long handle);
+    public native int add(long context, int contextType, String name, long handle);
 
     private native void destroy(long context);
 }

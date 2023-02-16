@@ -5,7 +5,7 @@ public class Profiler {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private final long profiler_;
+    public final long profiler_;
     private String path_;
 
     public Profiler(String path) {

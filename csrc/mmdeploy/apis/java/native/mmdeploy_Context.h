@@ -18,18 +18,10 @@ JNIEXPORT jlong JNICALL Java_mmdeploy_Context_create
 /*
  * Class:     mmdeploy_Context
  * Method:    add
- * Signature: (JILjava/lang/String;J)V
+ * Signature: (JILjava/lang/String;J)I
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Context_add__JILjava_lang_String_2J
+JNIEXPORT jint JNICALL Java_mmdeploy_Context_add
   (JNIEnv *, jobject, jlong, jint, jstring, jlong);
-
-/*
- * Class:     mmdeploy_Context
- * Method:    add
- * Signature: (JIJ)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Context_add__JIJ
-  (JNIEnv *, jobject, jlong, jint, jlong);
 
 /*
  * Class:     mmdeploy_Context

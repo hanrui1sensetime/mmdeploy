@@ -6,6 +6,7 @@ import mmdeploy.Mat;
 import mmdeploy.Model;
 import mmdeploy.Device;
 import mmdeploy.Context;
+import mmdeploy.Profiler;
 
 import org.opencv.videoio.*;
 import org.opencv.core.*;

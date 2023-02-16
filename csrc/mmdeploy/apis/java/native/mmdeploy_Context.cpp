@@ -14,7 +14,7 @@ jlong Java_mmdeploy_Context_create(JNIEnv *env, jobject) {
   return (jlong)context;
 }
 
-void Java_mmdeploy_Context_add(JNIEnv *env, jobject, jlong context_, jint contextType, jstring name, jlong handle) {
+jint Java_mmdeploy_Context_add(JNIEnv *env, jobject, jlong context_, jint contextType, jstring name, jlong handle) {
   auto object_name = env->GetStringUTFChars(name, nullptr);
   if ((int)contextType == MMDEPLOY_TYPE_SCHEDULER) {
     mmdeploy_context_add((mmdeploy_context_t)context_, (mmdeploy_context_type_t)contextType, object_name, (mmdeploy_scheduler_t) handle);
@@ -22,22 +22,17 @@ void Java_mmdeploy_Context_add(JNIEnv *env, jobject, jlong context_, jint contex
   else if ((int)contextType == MMDEPLOY_TYPE_MODEL) {
     mmdeploy_context_add((mmdeploy_context_t)context_, (mmdeploy_context_type_t)contextType, object_name, (mmdeploy_model_t) handle);
   }
-  else {
-    MMDEPLOY_ERROR("wrong context type, got {}", (int)contextType);
-  }
-  env->ReleaseStringUTFChars(name, object_name);
-}
-
-void Java_mmdeploy_Context_add(JNIEnv *env, jobject, jlong context_, jint contextType, jlong handle) {
-  if ((int)contextType == MMDEPLOY_TYPE_DEVICE) {
+  else if ((int)contextType == MMDEPLOY_TYPE_DEVICE) {
     mmdeploy_context_add((mmdeploy_context_t)context_, (mmdeploy_context_type_t)contextType, nullptr, (mmdeploy_device_t) handle);
   }
   else if ((int)contextType == MMDEPLOY_TYPE_PROFILER) {
     mmdeploy_context_add((mmdeploy_context_t)context_, (mmdeploy_context_type_t)contextType, nullptr, (mmdeploy_profiler_t) handle);
   }
   else {
-    MMDEPLOY_ERROR("wrong context type without name, got {}", (int)contextType);
+    MMDEPLOY_ERROR("wrong context type, got {}", (int)contextType);
   }
+  env->ReleaseStringUTFChars(name, object_name);
+  return 0;
 }
 
 void Java_mmdeploy_Context_destroy(JNIEnv *, jobject, jlong context_) {
