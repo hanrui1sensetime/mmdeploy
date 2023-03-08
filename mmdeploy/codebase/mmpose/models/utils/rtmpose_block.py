@@ -16,13 +16,14 @@ def scalenorm__forward__ncnn(self, x):
     ncnn does not support negative dimension for torch.chunk and torch.cat
     ncnn pad shape does not support float input
     """
-    # ncnn android FP16 will exceed when calculating norm, so first divide
-    # by 128, and then multiply by 128
-    norm = torch.norm(x / 128, dim=2, keepdim=True) * 128
+    # The one-dim of Fubinious norm is equal to L2Norm.
+    # Set p=2 explicitly to map torch.norm to ReduceL2 onnx op,
+    # which will avoid FP16 exceed.
+    norm = torch.norm(x, p=2, dim=2, keepdim=True)
     norm = norm * self.scale
     # Rewrite for ncnn binaryop broadcast.
-    norm = norm.clamp(min=self.eps).unsqueeze(2)
-    return (x.unsqueeze(2) / norm).squeeze(2) * self.g
+    norm = norm.clamp(min=self.eps)
+    return (x.unsqueeze(2) / norm.unsqueeze(2)).squeeze(2) * self.g
 
 
 @FUNCTION_REWRITER.register_rewriter(
